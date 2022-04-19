@@ -178,17 +178,24 @@ public class ExtensionManager {
   private boolean isEnabled(RestApiExtension r) {
     String forceToggle = System.getProperty(PROP_TOGGLE_REST_EXT + r.getName());
     return forceToggle != null
-           ? Boolean.valueOf(forceToggle)
+           ? Boolean.parseBoolean(forceToggle)
            : areDependantCoreExtensionsEnabled(r.getRequiredCoreExtensions());
   }
 
   private boolean isEnabled(AbstractH2OExtension r) {
     String forceToggle = System.getProperty(PROP_TOGGLE_CORE_EXT + r.getExtensionName());
     return forceToggle != null
-           ? Boolean.valueOf(forceToggle)
+           ? Boolean.parseBoolean(forceToggle)
            : r.isEnabled();
   }
 
+  private boolean isEnabled(RequestAuthExtension r) {
+    String forceToggle = System.getProperty(PROP_TOGGLE_CORE_EXT + r.getName());
+    return forceToggle != null
+            ? Boolean.parseBoolean(forceToggle)
+            : r.isEnabled();
+  }
+  
   private String[] getRestApiExtensionNames(){
     return restApiExtensions.keySet().toArray(new String[restApiExtensions.keySet().size()]);
   }
@@ -247,8 +254,8 @@ public class ExtensionManager {
     long before = System.currentTimeMillis();
     ServiceLoader<RequestAuthExtension> extensionsLoader = ServiceLoader.load(RequestAuthExtension.class);
     for (RequestAuthExtension ext : extensionsLoader) {
-      if (ext.isEnabled()) {
-        authExtensions.put(ext.getClass().getName(), ext);
+      if (isEnabled(ext)) {
+        authExtensions.put(ext.getName(), ext);
       }
     }
     authExtensionsRegistered = true;
